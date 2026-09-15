@@ -1,0 +1,11 @@
+{
+  "name": "Northbeam · CRM Routing",
+  "nodes": [
+    {"parameters": {}, "id": "trigger", "name": "Execute from router", "type": "n8n-nodes-base.executeWorkflowTrigger", "typeVersion": 1, "position": [200, 300]},
+    {"parameters": {"jsCode": "const result = $json.result;\nif (result.reply_requires_approval !== true) throw new Error('Safety invariant violated: reply approval missing');\nreturn [{ json: { provider: $env.CRM_PROVIDER || 'mock', action: result.crm_action, external_id: result.inquiry.external_id, ai_draft: result.draft_reply, approval_required: true } }];"}, "id": "guard", "name": "Safety + CRM payload", "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [460, 300]},
+    {"parameters": {"conditions": {"conditions": [{"leftValue": "={{$json.provider}}", "rightValue": "hubspot", "operator": {"type": "string", "operation": "equals"}}]}}, "id": "provider", "name": "HubSpot enabled?", "type": "n8n-nodes-base.if", "typeVersion": 2.2, "position": [720, 300]},
+    {"parameters": {"method": "POST", "url": "={{$env.HUBSPOT_ADAPTER_URL}}/crm/route", "sendBody": true, "specifyBody": "json", "jsonBody": "={{$json}}"}, "id": "hubspot", "name": "HubSpot adapter", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [980, 180]},
+    {"parameters": {"jsCode": "return [{ json: { ...$json, status: 'mocked_for_demo', created_at: new Date().toISOString() } }];"}, "id": "mock", "name": "Mock CRM record", "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [980, 420]}
+  ],
+  "connections": {"Execute from router": {"main": [[{"node": "Safety + CRM payload", "type": "main", "index": 0}]]}, "Safety + CRM payload": {"main": [[{"node": "HubSpot enabled?", "type": "main", "index": 0}]]}, "HubSpot enabled?": {"main": [[{"node": "HubSpot adapter", "type": "main", "index": 0}], [{"node": "Mock CRM record", "type": "main", "index": 0}]]}}
+}

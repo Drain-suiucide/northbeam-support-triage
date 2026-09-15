@@ -1,0 +1,9 @@
+{
+  "name": "Northbeam · Error Handler",
+  "nodes": [
+    {"parameters": {}, "id": "error", "name": "Workflow error trigger", "type": "n8n-nodes-base.errorTrigger", "typeVersion": 1, "position": [240, 300]},
+    {"parameters": {"jsCode": "return [{ json: { execution_id: $json.execution?.id, workflow: $json.workflow?.name, message: $json.execution?.error?.message, retryable: true, created_at: new Date().toISOString() } }];"}, "id": "normalize", "name": "Normalize error", "type": "n8n-nodes-base.code", "typeVersion": 2, "position": [500, 300]},
+    {"parameters": {"channel": "#automation-alerts", "text": "=n8n error in {{$json.workflow}}: {{$json.message}} · retryable={{$json.retryable}}"}, "id": "alert", "name": "Slack alert", "type": "n8n-nodes-base.slack", "typeVersion": 2.3, "position": [760, 300], "credentials": {"slackApi": {"id": "ENV_ONLY", "name": "Slack credential (not exported)"}}}
+  ],
+  "connections": {"Workflow error trigger": {"main": [[{"node": "Normalize error", "type": "main", "index": 0}]]}, "Normalize error": {"main": [[{"node": "Slack alert", "type": "main", "index": 0}]]}}
+}

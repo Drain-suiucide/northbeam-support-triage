@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv run --extra dev ruff check .
+      - run: uv run --extra dev mypy app scripts
+      - run: uv run --extra dev pytest
+      - run: uv run --extra dev python scripts/evaluate.py
+      - name: Validate workflow JSON and scan for obvious secrets
+        run: |
+          python -m json.tool workflows/01-main-router.json >/dev/null
+          python -m json.tool workflows/02-crm-routing.json >/dev/null
+          python -m json.tool workflows/99-error-handler.json >/dev/null
+          ! grep -RInE 'sk-[A-Za-z0-9]{20,}|pat-[A-Za-z0-9_]{20,}' workflows app || true

@@ -1,0 +1,11 @@
+{
+  "name": "Northbeam · Main Router",
+  "nodes": [
+    {"parameters": {}, "id": "webhook", "name": "Inbound inquiry", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [240, 300], "webhookId": "northbeam-inquiry"},
+    {"parameters": {"method": "POST", "url": "={{$env.TRIAGE_API_URL}}/v1/triage", "sendBody": true, "specifyBody": "json", "jsonBody": "={{$json}}", "options": {}}, "id": "triage", "name": "Normalize + triage", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4.2, "position": [520, 300]},
+    {"parameters": {"conditions": {"conditions": [{"leftValue": "={{$json.result.urgency}}", "rightValue": "critical", "operator": {"type": "string", "operation": "equals"}}]}}, "id": "urgent", "name": "Critical?", "type": "n8n-nodes-base.if", "typeVersion": 2.2, "position": [760, 300]},
+    {"parameters": {"channel": "#support-review", "text": "=Urgent triage {{$json.result.inquiry.external_id}} requires review"}, "id": "slack", "name": "Notify review", "type": "n8n-nodes-base.slack", "typeVersion": 2.3, "position": [1000, 180], "credentials": {"slackApi": {"id": "ENV_ONLY", "name": "Slack credential (not exported)"}}},
+    {"parameters": {"operation": "executeWorkflow", "workflowId": "={{$env.CRM_SUBWORKFLOW_ID}}"}, "id": "crm", "name": "CRM sub-workflow", "type": "n8n-nodes-base.executeWorkflow", "typeVersion": 1.2, "position": [1000, 420]}
+  ],
+  "connections": {"Inbound inquiry": {"main": [[{"node": "Normalize + triage", "type": "main", "index": 0}]]}, "Normalize + triage": {"main": [[{"node": "Critical?", "type": "main", "index": 0}]]}, "Critical?": {"main": [[{"node": "Notify review", "type": "main", "index": 0}], [{"node": "CRM sub-workflow", "type": "main", "index": 0}]]}}
+}
