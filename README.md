@@ -52,7 +52,7 @@ uv sync --extra dev
 uv run uvicorn app.main:app --reload --port 8010
 ```
 
-Open the API docs at `http://127.0.0.1:8010/docs`, or run:
+Open the visual operations dashboard at `http://127.0.0.1:8010/`. Click the three cases in the left queue to compare urgent complaint, GDPR request, and new lead routing. The dashboard shows the decision, urgency, CRM action, approval boundary, and raw structured result. Open the API docs at `http://127.0.0.1:8010/docs`, or run:
 
 ```bash
 curl http://127.0.0.1:8010/health

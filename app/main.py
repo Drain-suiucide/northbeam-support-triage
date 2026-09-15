@@ -1,11 +1,21 @@
+from pathlib import Path
 from uuid import uuid4
 
 from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from app.schemas import HealthResponse, Inquiry, ProcessResponse
 from app.service import process
 
 app = FastAPI(title="Northbeam Support Triage", version="0.1.0")
+BASE_DIR = Path(__file__).resolve().parent.parent
+app.mount("/static", StaticFiles(directory=BASE_DIR / "app" / "static"), name="static")
+
+
+@app.get("/", include_in_schema=False)
+def dashboard() -> FileResponse:
+    return FileResponse(BASE_DIR / "app" / "static" / "index.html")
 
 
 @app.get("/health", response_model=HealthResponse)

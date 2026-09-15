@@ -11,6 +11,13 @@ def test_health() -> None:
     assert response.json()["status"] == "ok"
 
 
+def test_dashboard_is_available() -> None:
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "Every inquiry gets" in response.text
+    assert client.get("/static/styles.css").status_code == 200
+
+
 def test_gdpr_request_is_separate_task_and_never_auto_replied() -> None:
     response = client.get("/v1/demo/gdpr-delete")
     payload = response.json()
